@@ -1,1 +1,53 @@
-Hello world!
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scott’s Psycidelic Games</title>
+    <link rel="stylesheet" href="style.css" />
+      
+    <!-- firebase start ****************************************-->
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+    <!-- firebase end ******************************************-->
+    <script type="module" src="./main.mjs"></script>
+  </head>
+<body>
+  <div class="container">
+    <h1>Scott’s Psycidelic Games</h1>
+
+    <table id="fruitTable">
+      <caption>Highscores</caption>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Maze Highscore</th>
+          <th>Coin Highscore</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- JavaScript will fill this -->
+      </tbody>
+    </table>
+
+    <p>Sign-up form:</p>
+    <button onclick="fb_authenticate()">Login with Google</button>
+
+    <form id="fruitForm">
+      <label for="userName">Your Username:</label>
+      <input type="text" id="userName" name="userName" required />
+
+      <label for="userAge">Your Age:</label>
+      <input type="number" id="userAge" name="userAge" required />
+    </form>
+
+    <button onclick="submitform()">Submit</button>
+    <button onclick="fb_logOut()">Log Out</button>
+
+    <br><br><br>
+    <div id="response">
+    </div>
+
+    <p id="statusMessage"></p>
+  </div>
+</body>
+</html>
