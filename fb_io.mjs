@@ -80,57 +80,75 @@ function fb_logOut() {
         console.log(error);
     });
 }
-function fb_writeTo() {
+function fb_write(DATABASE, FILEPATH, DATA) {
+        const REF = ref(DATABASE, FILEPATH);
+        set(REF, DATA).then(() => {
+            console.log("Written the following information to the database:");
+            console.log(DATA);
+        }).catch((error) => {
+            console.log("Error with writing to the database");
+            console.log(error);
+        });
+    }
+function fb_writeUserInformation() {
     console.log('%c fb_writeTo: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    console.log(googleAuth.user.uid);
-    const FILEPATH = "userInformtion/" + googleAuth.user.uid;
-    const REF = ref(fb_gameDB, FILEPATH);
-
-    var _userName = simplyfyString(document.getElementById("userName").value);
-    var _userAge = simplyfyString(document.getElementById("userAge").value);
+    // Write to userInformation
+    var filePath = "userInformation/" + googleAuth.user.uid;
+    var _userName = document.getElementById("userName").value;
+    var _userAge = document.getElementById("userAge").value;
     var UserInformation = {userName: _userName, userAge: _userAge };
-    
-    set(REF, UserInformation).then(() => {
-        console.log("Written the following information to the database:");
-        console.log(UserInformation);
-    }).catch((error) => {
-        console.log("Error with writing to the database");
-        console.log(error);
-    });
+    fb_write(fb_gameDB, filePath, UserInformation);
 
-    function simplyfyString(str) {
-        // Remove spaces and convert to lowercase for consistency
-        return str.toLowerCase().replace(/\s+/g, '');
-    }
+    // Write a dummy highscore for maze game
+    filePath = "games/mazeGame/" + googleAuth.user.uid;
+    var mazeGameHighScore = {highScore: 5};
+    fb_write(fb_gameDB, filePath, mazeGameHighScore);
+
+    // Write a dummy highscore for coin game
+    filePath = "games/coinGame/" + googleAuth.user.uid;
+    var coinGameHighScore = {highScore: 5};
+    fb_write(fb_gameDB, filePath, coinGameHighScore);
 }
 function submitform() {
     // Check the user is logged in
     if(googleAuth != null) {
         document.getElementById("statusMessage").innerHTML = ("");
-        fb_writeTo();
+        fb_writeUserInformation();
     } else {
         document.getElementById("statusMessage").innerHTML = ("User must be logged in");
     }
 }
-function fb_dislay(fb_data) {
-    console.log('%c fb_dislay: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
+function fb_read(DATABASE, FILEPATH) {
+    console.log('%c fb_read: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    document.getElementById("response").innerHTML = `
-        <div style="background: rgb(248, 186, 104);; border: 1px solid #8b0000; padding: 1rem; border-radius: 8px;">
-            <p>Kia ora ${fb_data.name},</p>
-            <p>Thank you for joining us at Scott’s Strawberry Saloon (and other fruit products)! We're thrilled to have you as a customer!</p>
-            <p>Based on your preferences, we’ll be sending you personalized recommendations for tasty and healthy treats made with the freshest fruit — especially those ${fb_data.favoriteFruit} we heard you love!</p>
-            <p>At the moment, we want to offer you a deal to get fresh ${fb_data.favoriteFruit} ${fb_data.fruitQuantity}x a week!!</p>
-            <p>Ngā mihi nui,</p>
-            <p><em>The Scott’s Strawberry Saloon Team</em></p>
-        </div>
-    `;
+    const REF = ref(fb_gameDB, FILEPATH);
+
+    get(REF).then((snapshot) => {
+        var fb_data = snapshot.val();
+
+        if (fb_data != null) {
+            console.log("Successfully read database information:");
+            console.log(fb_data);
+            fb_dislay(fb_data);
+        } else {
+            console.log("Attempting to read a value that doesn't exist");
+            console.log(fb_data);
+        }
+    }).catch((error) => {
+        console.log("Error with reading the database");
+        console.log(error);
+    });
+}
+function fb_readPlayerStuff() {
+    
+    const FILEPATH = "userInformation/" + googleAuth.user.uid;
+    fb_read(fb_gameDB, FILEPATH);
 }
 function fb_readAll() {
     console.log('%c fb_readAll: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    const REF = ref(fb_gameDB, "Users");
+    const REF = ref(fb_gameDB, "userInformation");
 
     get(REF).then((snapshot) => {
         var fb_data = snapshot.val();
@@ -184,27 +202,23 @@ function fb_listenForChanges() {
     });
 }
 
-/*function fb_read() {
-    console.log('%c fb_read: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
+/*function fb_dislay(fb_data) {
+    console.log('%c fb_dislay: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    const FILEPATH = "userInformation/" + googleAuth.user.uid;
-    const REF = ref(fb_gameDB, FILEPATH);
-
-    get(REF).then((snapshot) => {
-        var fb_data = snapshot.val();
-
-        if (fb_data != null) {
-            console.log("Successfully read database information:");
-            console.log(fb_data);
-            fb_dislay(fb_data);
-        } else {
-            console.log("Attempting to read a value that doesn't exist");
-            console.log(fb_data);
-        }
-    }).catch((error) => {
-        console.log("Error with reading the database");
-        console.log(error);
-    });
+    document.getElementById("response").innerHTML = `
+        <div style="background: rgb(248, 186, 104);; border: 1px solid #8b0000; padding: 1rem; border-radius: 8px;">
+            <p>Kia ora ${fb_data.name},</p>
+            <p>Thank you for joining us at Scott’s Strawberry Saloon (and other fruit products)! We're thrilled to have you as a customer!</p>
+            <p>Based on your preferences, we’ll be sending you personalized recommendations for tasty and healthy treats made with the freshest fruit — especially those ${fb_data.favoriteFruit} we heard you love!</p>
+            <p>At the moment, we want to offer you a deal to get fresh ${fb_data.favoriteFruit} ${fb_data.fruitQuantity}x a week!!</p>
+            <p>Ngā mihi nui,</p>
+            <p><em>The Scott’s Strawberry Saloon Team</em></p>
+        </div>
+    `;
+}*/
+/*function simplyfyString(str) {
+    // Remove spaces and convert to lowercase for consistency
+    return str.toLowerCase().replace(/\s+/g, '');
 }*/
 /*function fb_detectAuthStateChanged() {
     console.log('%c fb_detectAuthStateChanged: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
