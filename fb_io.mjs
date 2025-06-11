@@ -16,7 +16,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase
 /**************************************************************/
 export { fb_initialise, fb_authenticate, fb_logOut, submitform, fb_listenForChanges };
 fb_initialise();
-fb_readAll();
+//fb_readAll();
 fb_listenForChanges();
 
 function fb_initialise() {
@@ -115,6 +115,7 @@ function submitform() {
     if(googleAuth != null) {
         document.getElementById("statusMessage").innerHTML = ("");
         fb_writeUserInformation();
+        fb_readPlayerStuff();
     } else {
         document.getElementById("statusMessage").innerHTML = ("User must be logged in");
     }
@@ -122,7 +123,7 @@ function submitform() {
 function fb_read(DATABASE, FILEPATH) {
     console.log('%c fb_read: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    const REF = ref(fb_gameDB, FILEPATH);
+    const REF = ref(DATABASE, FILEPATH);
 
     get(REF).then((snapshot) => {
         var fb_data = snapshot.val();
@@ -130,20 +131,30 @@ function fb_read(DATABASE, FILEPATH) {
         if (fb_data != null) {
             console.log("Successfully read database information:");
             console.log(fb_data);
-            fb_dislay(fb_data);
+            return fb_data;
         } else {
             console.log("Attempting to read a value that doesn't exist");
             console.log(fb_data);
+            return null
         }
     }).catch((error) => {
         console.log("Error with reading the database");
         console.log(error);
+        return null
     });
 }
 function fb_readPlayerStuff() {
     
+    var highScores = [];
+
+    var playerInformationArray = [];
     const FILEPATH = "userInformation/" + googleAuth.user.uid;
-    fb_read(fb_gameDB, FILEPATH);
+    var fb_data = fb_read(fb_gameDB, FILEPATH);
+    console.log(fb_data);
+    if (fb_data != null) {
+        playerInformationArray.push(fb_data);
+    }
+    console.log(playerInformationArray);
 }
 function fb_readAll() {
     console.log('%c fb_readAll: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
