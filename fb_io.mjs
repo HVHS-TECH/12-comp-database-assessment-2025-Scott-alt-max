@@ -114,7 +114,7 @@ function submitform() {
     // Check the user is logged in
     if(googleAuth != null) {
         document.getElementById("statusMessage").innerHTML = ("");
-        fb_writeUserInformation();
+        //fb_writeUserInformation();
         fb_readPlayerStuff();
     } else {
         document.getElementById("statusMessage").innerHTML = ("User must be logged in");
@@ -147,14 +147,31 @@ function fb_readPlayerStuff() {
     
     var highScores = [];
 
+    // Read the information for one player
     var playerInformationArray = [];
-    const FILEPATH = "userInformation/" + googleAuth.user.uid;
-    var fb_data = fb_read(fb_gameDB, FILEPATH);
-    console.log(fb_data);
-    if (fb_data != null) {
-        playerInformationArray.push(fb_data);
-    }
-    console.log(playerInformationArray);
+
+    fb_read(fb_gameDB, ("userInformation/" + googleAuth.user.uid)).then((userInformation) => {
+        playerInformationArray.push(userInformation);
+
+        /*fb_read(fb_gameDB, ("games/mazeGame/" + googleAuth.user.uid)).then((mazeGameHighScore) => {
+            playerInformationArray.push(mazeGameHighScore);
+
+            fb_read(fb_gameDB, ("games/coinGame/" + googleAuth.user.uid)).then((coinGameHighScore) => {
+                playerInformationArray.push(coinGameHighScore);
+
+                console.log(playerInformationArray);
+            }).catch((error) => {
+                console.log("Error with reading the database");
+                console.log(error);
+            });
+        }).catch((error) => {
+            console.log("Error with reading the database");
+            console.log(error);
+        });*/
+    }).catch((error) => {
+        console.log("Error with reading the database");
+        console.log(error);
+    });
 }
 function fb_readAll() {
     console.log('%c fb_readAll: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
