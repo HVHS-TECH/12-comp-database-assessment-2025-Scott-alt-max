@@ -138,13 +138,22 @@ function fb_read(DATABASE, FILEPATH) {
 function fb_sortByMazeHighScore() {
     console.log('%c fb_sortByMazeHighScore: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    const REF = query(ref(fb_gameDB, "users"), orderByChild("mazeGameHighScore"), limitToLast(5));
+    const REF = query(ref(fb_gameDB, "users"), orderByChild("mazeGameHighScore"), limitToLast(3));
 
     get(REF).then((snapshot) => {
         var fb_data = snapshot.val();
         if (fb_data != null) {
             console.log("Successfully read database information:");
             console.log(fb_data);
+            
+            const tbody = document.querySelector("#fruitTable tbody");
+            tbody.innerHTML = "";
+
+            fb_data.forEach(([fruit, count]) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${fruit}</td><td>${count}</td>`;
+                tbody.appendChild(row);
+            });
             // Logging database data
             snapshot.forEach(function (userScoreSnapshot) {
                 console.log(userScoreSnapshot.val()); //DIAG
