@@ -13,15 +13,17 @@
   </head>
 <body>
   <div class="container">
-    <h1>Scott’s Hallucinogen Games</h1>
-
+    <h1>Scott’s Sliocybin Games</h1>
+    <a href="games/mazeGame.html">mazegame</a>
+    <a href="games/coinGame.html">coinggame</a>
     <table id="fruitTable">
-      <caption>Highscores</caption>
+      <h3>Highscores</h3>
+      <p>Click on games to show appropriate highscores</p>
       <thead>
         <tr>
           <th>Username</th>
-          <th>Maze Highscore</th>
-          <th>Coin Highscore</th>
+          <th onclick="fb_sortByGameHighScore('mazeGameHighScore', this)">Maze Highscore <span class="arrows" id="mazeSortArrow"></span></th>
+          <th onclick="fb_sortByGameHighScore('coinGameHighScore', this)">Coin Highscore <span class="arrows" id="coinSortArrow"></span></th>
         </tr>
       </thead>
       <tbody>

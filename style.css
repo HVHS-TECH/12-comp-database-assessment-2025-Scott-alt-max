@@ -60,7 +60,7 @@ button:hover {
 
 table {
   border-collapse: collapse;
-  width: 50%;
+  width: 75%;
   margin: 20px auto;
   font-family: sans-serif;
 }
@@ -71,9 +71,9 @@ th, td {
 }
 th {
   background-color: #f2f2f2;
+}table thead tr :not(:first-child) {
+  text-decoration: underline;
 }
-caption {
-  caption-side: top;
-  font-size: 1.5em;
-  margin-bottom: 10px;
+table thead tr :not(:first-child):hover {
+  cursor: pointer;
 }

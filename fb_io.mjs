@@ -14,19 +14,14 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
 /**************************************************************/
-export { fb_initialise, fb_authenticate, fb_logOut, submitform, fb_listenForChanges };
+export { fb_initialise, fb_authenticate, fb_detectAuthStateChanged, fb_logOut, submitform, fb_sortByGameHighScore, fb_write, fb_read };
 fb_initialise();
-//fb_readAll();
-fb_listenForChanges();
+fb_detectAuthStateChanged();
 
+// Functions to initialise and authenticate
 function fb_initialise() {
     console.log('%c fb_initialise(): ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
     
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     const FB_GAMECONFIG = {
         apiKey: "AIzaSyBA9LF4VKTGLBynVTOiG3iJqm-odKKE74g",
         authDomain: "comp-2025-scott-barlow.firebaseapp.com",
@@ -67,6 +62,21 @@ function fb_authenticate() {
         console.log(error); //DIAG
     });
 }
+function fb_detectAuthStateChanged() {
+    console.log('%c fb_detectAuthStateChanged: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
+    const AUTH = getAuth();
+
+    onAuthStateChanged(AUTH, (user) => {
+        if (user) {
+            console.log("User doesn't need to sign in");
+        } else {
+            console.log("User needs to sign in");
+        }
+    }, (error) => {
+        console.log("Authorisation state detection error");
+        console.log(error);
+    });
+}
 function fb_logOut() {
     console.log('%c fb_logOut: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
     const AUTH = getAuth();
@@ -80,11 +90,13 @@ function fb_logOut() {
         console.log(error);
     });
 }
-function fb_write(DATABASE, FILEPATH, DATA) {
-        const REF = ref(DATABASE, FILEPATH);
+
+// Functions to write user data
+function fb_write(FILEPATH, DATA) {
+        const REF = ref(fb_gameDB, FILEPATH);
         set(REF, DATA).then(() => {
-            console.log("Written the following information to the database:");
-            console.log(DATA);
+            //console.log("Written the following information to the database:");
+            //console.log(DATA);
         }).catch((error) => {
             console.log("Error with writing to the database");
             console.log(error);
@@ -100,29 +112,30 @@ function fb_writeUserInformation() {
     var _mazeGameHighScore = 5;
     var _coinGameHighScore = 5;
     var UserInformation = {userName: _userName, userAge: _userAge, mazeGameHighScore: _mazeGameHighScore, coinGameHighScore: _coinGameHighScore};
-    fb_write(fb_gameDB, filePath, UserInformation);
+    fb_write(filePath, UserInformation);
 }
 function submitform() {
     // Check the user is logged in
     if(googleAuth != null) {
         document.getElementById("statusMessage").innerHTML = ("");
         fb_writeUserInformation();
-        fb_sortByMazeHighScore();
     } else {
         document.getElementById("statusMessage").innerHTML = ("User must be logged in");
     }
 }
-function fb_read(DATABASE, FILEPATH) {
+
+// Functions to read stuff from the database
+function fb_read(FILEPATH) {
     console.log('%c fb_read: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    const REF = ref(DATABASE, FILEPATH);
+    const REF = ref(fb_gameDB, FILEPATH);
 
     return get(REF).then((snapshot) => {
         var fb_data = snapshot.val();
 
         if (fb_data != null) {
-            console.log("Successfully read database information:");
-            console.log(fb_data);
+            //console.log("Successfully read database information:");
+            //console.log(fb_data);
             return fb_data;
         } else {
             console.log("Attempting to read a value that doesn't exist");
@@ -135,10 +148,10 @@ function fb_read(DATABASE, FILEPATH) {
         return null
     });
 }
-function fb_sortByMazeHighScore() {
-    console.log('%c fb_sortByMazeHighScore: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
+function fb_sortByGameHighScore(gameHighScore, element) {
+    console.log('%c fb_sortByGameHighScore: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    const REF = query(ref(fb_gameDB, "users"), orderByChild("mazeGameHighScore"), limitToLast(3));
+    const REF = query(ref(fb_gameDB, "users"), orderByChild(gameHighScore), limitToLast(3));
 
     get(REF).then((snapshot) => {
         var fb_data = snapshot.val();
@@ -146,18 +159,19 @@ function fb_sortByMazeHighScore() {
             console.log("Successfully read database information:");
             console.log(fb_data);
             
+            // Add the top scores to the highscore table
             const tbody = document.querySelector("#fruitTable tbody");
             tbody.innerHTML = "";
 
-            fb_data.forEach(([fruit, count]) => {
+            snapshot.forEach((userInformation) => {
                 const row = document.createElement("tr");
-                row.innerHTML = `<td>${fruit}</td><td>${count}</td>`;
-                tbody.appendChild(row);
+                row.innerHTML = `<td>${userInformation.val().userName}</td><td>${userInformation.val().mazeGameHighScore}</td><td>${userInformation.val().coinGameHighScore}</td>`;
+                tbody.prepend(row);
             });
-            // Logging database data
-            snapshot.forEach(function (userScoreSnapshot) {
-                console.log(userScoreSnapshot.val()); //DIAG
-            });
+
+            // Remove arrows from all other elements and add it to this one
+            document.querySelectorAll(".arrows").forEach((span) => span.innerHTML = "");
+            element.querySelector("span").innerHTML = "▼";
         } else {
             console.log("Attempting to read a value that doesn't exist");
             console.log(fb_data);
@@ -167,45 +181,7 @@ function fb_sortByMazeHighScore() {
         console.log(error);
     });
 }
-function fb_readAll() {
-    console.log('%c fb_readAll: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-
-    const REF = ref(fb_gameDB, "userInformation");
-
-    get(REF).then((snapshot) => {
-        var fb_data = snapshot.val();
-
-        if (fb_data != null) {
-            console.log("Successfully read database information:");
-            const fruitCounts = {};
-
-            Object.values(fb_data).forEach(user => {
-                const fruit = user.favoriteFruit;
-                if (fruit) {
-                    fruitCounts[fruit] = (fruitCounts[fruit] || 0) + 1;
-                }
-            });
-            const fruitArray = Object.entries(fruitCounts);
-            fruitArray.sort((a, b) => b[1] - a[1]);
-
-            const tbody = document.querySelector("#fruitTable tbody");
-            tbody.innerHTML = "";
-
-            fruitArray.forEach(([fruit, count]) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${fruit}</td><td>${count}</td>`;
-                tbody.appendChild(row);
-            });
-        } else {
-            console.log("Attempting to read a value that doesn't exist");
-            console.log(fb_data);
-        }
-    }).catch((error) => {
-        console.log("Error with reading the database");
-        console.log(error);
-    });
-}
-function fb_listenForChanges() {
+/*function fb_listenForChanges() {
     console.log('%c fb_listenForChanges: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
     var filePath = "Users";
@@ -222,7 +198,7 @@ function fb_listenForChanges() {
             console.log(fb_data);
         }
     });
-}
+}*/
 /*function fb_readPlayerStuff() {
     console.log('%c fb_readPlayerStuff: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
     
@@ -272,18 +248,41 @@ function fb_listenForChanges() {
     // Remove spaces and convert to lowercase for consistency
     return str.toLowerCase().replace(/\s+/g, '');
 }*/
-/*function fb_detectAuthStateChanged() {
-    console.log('%c fb_detectAuthStateChanged: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-    const AUTH = getAuth();
+/*function fb_readAll() {
+    console.log('%c fb_readAll: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    onAuthStateChanged(AUTH, (user) => {
-        if (user) {
-            console.log("User hasn't changed");
+    const REF = ref(fb_gameDB, "userInformation");
+
+    get(REF).then((snapshot) => {
+        var fb_data = snapshot.val();
+
+        if (fb_data != null) {
+            console.log("Successfully read database information:");
+            const fruitCounts = {};
+
+            Object.values(fb_data).forEach(user => {
+                const fruit = user.favoriteFruit;
+                if (fruit) {
+                    fruitCounts[fruit] = (fruitCounts[fruit] || 0) + 1;
+                }
+            });
+            const fruitArray = Object.entries(fruitCounts);
+            fruitArray.sort((a, b) => b[1] - a[1]);
+
+            const tbody = document.querySelector("#fruitTable tbody");
+            tbody.innerHTML = "";
+
+            fruitArray.forEach(([fruit, count]) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${fruit}</td><td>${count}</td>`;
+                tbody.appendChild(row);
+            });
         } else {
-            console.log("User has changed");
+            console.log("Attempting to read a value that doesn't exist");
+            console.log(fb_data);
         }
-    }, (error) => {
-        console.log("Authorisation state detection error");
+    }).catch((error) => {
+        console.log("Error with reading the database");
         console.log(error);
     });
 }*/

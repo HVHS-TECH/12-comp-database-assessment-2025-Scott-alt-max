@@ -24,6 +24,50 @@ const GameSeconds = 15;
 var Score = 0;
 var StartTime;
 
+let cnv;
+let Player, Spinner, WallGroup, Wall_Left, Wall_Right, Wall_Top, Wall_Bottom, CoinGroup, RestartButton;
+
+// Firebase functions and variables to get the highscores working
+var HighScore;
+var uid = null;
+
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import { fb_initialise, fb_write, fb_read } from '../fb_io.mjs';
+
+fb_initialise();
+
+function updateHighScore(_highScore) {
+    if (uid != null) {
+        var filePath = "users/" + uid + "/coinGameHighScore";
+        fb_write(filePath, _highScore);
+    }
+}
+function readHighScore() {
+    if (uid != null) {
+        var filePath = "users/" + uid + "/coinGameHighScore";
+        return fb_read(filePath);
+    }
+}
+
+const AUTH = getAuth();
+onAuthStateChanged(AUTH, (user) => {
+    if (user) {
+        console.log("User doesn't need to sign in");
+        uid = user.uid;
+        console.log(uid);
+		readHighScore().then((DBHighScore) => {
+			console.log("The high score is:");
+			HighScore = DBHighScore;
+			console.log(HighScore);
+		});
+    } else {
+        console.log("User needs to sign in");
+    }
+}, (error) => {
+    console.log("Authorisation state detection error");
+    console.log(error);
+});
+
 function setup() {
 	console.log("setup: ");
 	cnv = new Canvas(GameWidth, GameWidth);
@@ -67,7 +111,7 @@ function setup() {
 
 	// Restart button
 	RestartButton = createButton("Restart Game");
-	RestartButton.position(GameWidth / 2 - 55, GameHeight / 2 + 2 * TextSize);
+	RestartButton.position(GameWidth / 2 - 55, GameHeight / 2 + 3 * TextSize);
 	RestartButton.mousePressed(RestartGame);
 	RestartButton.hide();
 }
@@ -75,8 +119,7 @@ function setup() {
 /*******************************************************/
 // draw()
 /*******************************************************/
-function draw() {
-	
+function draw() {	
 	// Controls
     Player.moveTowards(mouseX, mouseY, 0.05);
 
@@ -94,15 +137,25 @@ function draw() {
         Spinner.visible = false;
         Player.visible = false;
 		RestartButton.show();
+        textAlign(CENTER, CENTER);
 		if(Score >= NumberOfCoins) {
 			background('green');
-			text("You Won :)", GameWidth / 2 - 75, GameHeight / 2 - 20);
-			text("Your Score: " + Score + "/" + NumberOfCoins, GameWidth / 2 - 150, GameHeight / 2 + TextSize);
+			text("You Won :)", GameWidth / 2, GameHeight / 2 - 20);
 		} else {
 			background('red');
-			text("Game Over :(", GameWidth / 2 - 110, GameHeight / 2 - 20);
-			text("Your Score: " + Score + "/" + NumberOfCoins, GameWidth / 2 - 150, GameHeight / 2 + TextSize);
+			text("Game Over :(", GameWidth / 2, GameHeight / 2 - 20);
 		}
+		text("Your Score: " + Score + "/" + NumberOfCoins, GameWidth / 2, GameHeight / 2 + TextSize);
+		// Send highscore to firebase
+        if (uid != null) {
+            if (Score > HighScore) {
+                updateHighScore(Score);
+            }
+            text("Your high score is " + HighScore, GameWidth / 2, GameHeight / 2 + 2 * TextSize);
+        } else {
+            text("Sign-in to view your highscores", GameWidth / 2, GameHeight / 2 + 2 * TextSize);
+        }
+        textAlign(LEFT, CENTER);
     } else {
 		background('red');
         fill('white');
@@ -114,13 +167,23 @@ function draw() {
 function RestartGame() {
 	StartTime = millis();
 	RestartButton.hide();
-	Score = 0;Spinner.visible = true;
+	Score = 0;
+	Spinner.visible = true;
 	Player.visible = true;
 	MakeCoins();
+	
+	// Get the highscore now because it is async
+    if (uid != null) {
+        readHighScore().then((DBHighScore) => {
+            console.log("The high score is:");
+            HighScore = DBHighScore;
+            console.log(HighScore);
+        });
+    }
 }
 function MakeCoins() {
 	for (var i = 0; i < NumberOfCoins; i++) {
-		Coin = new Sprite(Math.random() * GameWidth, Math.random() * GameHeight, 20, "d");
+		let Coin = new Sprite(Math.random() * GameWidth, Math.random() * GameHeight, 20, "d");
 		Coin.vel.x = 3;
 		Coin.vel.y = 4;
 		Coin.bounciness = 0.5;
@@ -128,8 +191,6 @@ function MakeCoins() {
 		CoinGroup.add(Coin);
 	}
 }
-	
 
-/*******************************************************/
-//  END OF APP
-/*******************************************************/
+window.setup = setup;
+window.draw = draw;

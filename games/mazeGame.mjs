@@ -6,7 +6,8 @@ const MAZEWALLCOLOR = "Black";
 const MAZEWALLWIDTH = 3;
 var SquaresWide = 0;
 var SquaresTall = 0;
-var MazeWalls;
+let smallButton, mediumButton, bigButton, stupidBigButton;
+let Player, FinishSquare, MazeWall, MazeWalls;
 
 var PlayerSpeed = 0.2;
 var PlayerMaxSpeed = 5;
@@ -17,6 +18,44 @@ const TEXTSIZE = 25;
 var GameSeconds = 2;
 var SecondsLeft;
 var CurrentFrame = 0;
+
+// Firebase functions and variables to get the highscores working
+var HighScore;
+var uid = null;
+
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import { fb_initialise, fb_write, fb_read } from '../fb_io.mjs';
+
+fb_initialise();
+
+const AUTH = getAuth();
+onAuthStateChanged(AUTH, (user) => {
+    if (user) {
+        console.log("User doesn't need to sign in");
+        uid = user.uid;
+        console.log(uid);
+    } else {
+        console.log("User needs to sign in");
+    }
+}, (error) => {
+    console.log("Authorisation state detection error");
+    console.log(error);
+});
+
+function updateHighScore(_highScore) {
+    if (uid != null) {
+        var filePath = "users/" + uid + "/mazeGameHighScore";
+        fb_write(filePath, _highScore);
+    }
+}
+function readHighScore() {
+    if (uid != null) {
+        var filePath = "users/" + uid + "/mazeGameHighScore";
+        return fb_read(filePath);
+    }
+}
+
+// Rest of game code
 
 // For the middle squares of the maze, a 6 means part of the maze, a 5 means a part of the trail, and a 4 means not part of the maze or trail,
 // and for the walls, a 3 means an edge wall, a 2 means a wall, a 1 means a gap, and a 0 mean a corner
@@ -306,7 +345,7 @@ function CreateSprites(_SquaresWide, _SquaresTall) {
     DrawMaze();
     MazeWalls.color = MAZEWALLCOLOR;
 }
-function StartGame(_MazeSquaresWide, _MazeSquaresTall, _GameSeconds) { 
+function StartGame(_MazeSquaresWide, _MazeSquaresTall, _GameSeconds) {
     // Set the time for how long the game runs
     GameSeconds = _GameSeconds;
 
@@ -324,6 +363,15 @@ function StartGame(_MazeSquaresWide, _MazeSquaresTall, _GameSeconds) {
 
     // Make the sprites
     CreateSprites(_MazeSquaresWide, _MazeSquaresTall);
+
+    // Get the highscore now because it is async
+    if (uid != null) {
+        readHighScore().then((DBHighScore) => {
+            console.log("The high score is:");
+            HighScore = DBHighScore;
+            console.log(HighScore);
+        });
+    }
 }
 function EndGame(gameState) {
     // Remove the sprites
@@ -369,7 +417,7 @@ function MakeButtons() {
 function setup() {
     console.log("Setup started");
 
-    cnw = new Canvas(GAMEWIDTH + INFORMATIONPANELWIDTH, GAMEHEIGHT);
+    let cnw = new Canvas(GAMEWIDTH + INFORMATIONPANELWIDTH, GAMEHEIGHT);
     MakeButtons();
 
     console.log("Setup finished");
@@ -437,6 +485,15 @@ function draw() {
             textAlign(CENTER, CENTER);
             text("You Won", (GAMEWIDTH + INFORMATIONPANELWIDTH) / 2, GAMEHEIGHT / 2);
             text("You had " + SecondsLeft + " seconds left", (GAMEWIDTH + INFORMATIONPANELWIDTH) / 2, GAMEHEIGHT / 2 + TEXTSIZE + 5);
+            // Send highscore to firebase
+            if (uid != null) {
+                if (SecondsLeft > HighScore) {
+                    updateHighScore(SecondsLeft);
+                }
+                text("Your high score is " + HighScore, (GAMEWIDTH + INFORMATIONPANELWIDTH) / 2, GAMEHEIGHT / 2 + TEXTSIZE * 2 + 10);
+            } else {
+                text("Sign-in to view your highscores", (GAMEWIDTH + INFORMATIONPANELWIDTH) / 2, GAMEHEIGHT / 2 + TEXTSIZE * 2 + 10);
+            }
             break;
         case 3:
             // Game has finished, player lost
@@ -444,9 +501,22 @@ function draw() {
             textAlign(CENTER, CENTER);
             text("You Lost", (GAMEWIDTH + INFORMATIONPANELWIDTH) / 2, GAMEHEIGHT / 2);
             text("You had " + SecondsLeft + " seconds left", (GAMEWIDTH + INFORMATIONPANELWIDTH) / 2, GAMEHEIGHT / 2 + TEXTSIZE + 5);
+
+            // Send highscore to firebase
+            if (uid != null) {
+                if (SecondsLeft > HighScore) {
+                    updateHighScore(SecondsLeft);
+                }
+                text("Your high score is " + HighScore, (GAMEWIDTH + INFORMATIONPANELWIDTH) / 2, GAMEHEIGHT / 2 + TEXTSIZE * 2 + 10);
+            } else {
+                text("Sign-in to view your highscores", (GAMEWIDTH + INFORMATIONPANELWIDTH) / 2, GAMEHEIGHT / 2 + TEXTSIZE * 2 + 10);
+            }
             break;
         default:
             // Throw an error is gamestate is none of the above
             console.log("GameState varibale is invalid");
     }
 }
+
+window.setup = setup;
+window.draw = draw;
