@@ -20,7 +20,7 @@ const GameWidth = 800;
 const GameHeight = 800;
 const NumberOfCoins = 1000;
 const TextSize = 35;
-const GameSeconds = 15;
+const GameSeconds = 10;
 var Score = 0;
 var StartTime;
 

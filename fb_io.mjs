@@ -105,14 +105,24 @@ function fb_write(FILEPATH, DATA) {
 function fb_writeUserInformation() {
     console.log('%c fb_writeTo: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    // Write user's information
+    // Get user's information from form
     var filePath = "users/" + googleAuth.user.uid;
     var _userName = document.getElementById("userName").value;
     var _userAge = document.getElementById("userAge").value;
-    var _mazeGameHighScore = 5;
-    var _coinGameHighScore = 5;
-    var UserInformation = {userName: _userName, userAge: _userAge, mazeGameHighScore: _mazeGameHighScore, coinGameHighScore: _coinGameHighScore};
-    fb_write(filePath, UserInformation);
+
+    // Read the user's highscores then write the user's information
+    fb_read(("users/" + googleAuth.user.uid + "/coinGameHighScore")).then((fb_coinGameHighScore) => {
+        var _coinGameHighScore;
+        (fb_coinGameHighScore != null) ? _coinGameHighScore = fb_coinGameHighScore : _coinGameHighScore = 0;
+
+        fb_read(("users/" + googleAuth.user.uid + "/mazeGameHighScore")).then((fb_mazeGameHighScore) => {
+            var _mazeGameHighScore;
+            (fb_mazeGameHighScore != null) ? _mazeGameHighScore = fb_mazeGameHighScore : _mazeGameHighScore = 0;
+            
+            var UserInformation = {userName: _userName, userAge: _userAge, mazeGameHighScore: _mazeGameHighScore, coinGameHighScore: _coinGameHighScore};
+            fb_write(filePath, UserInformation);
+        });
+	});
 }
 function submitform() {
     // Check the user is logged in
