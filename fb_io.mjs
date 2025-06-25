@@ -11,7 +11,6 @@ var fb_favoriteFruits = [];
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getDatabase, ref, set, get, update, query, orderByChild, limitToFirst, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
 /**************************************************************/
 export { fb_initialise, fb_authenticate, fb_detectAuthStateChanged, fb_logOut, submitform, fb_sortByGameHighScore, fb_write, fb_read };
@@ -105,24 +104,29 @@ function fb_write(FILEPATH, DATA) {
 function fb_writeUserInformation() {
     console.log('%c fb_writeTo: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    // Get user's information from form
-    var filePath = "users/" + googleAuth.user.uid;
+    // Get user's public information from form
+    var filePath = "userPublicInformation/" + googleAuth.user.uid;
     var _userName = document.getElementById("userName").value;
-    var _userAge = document.getElementById("userAge").value;
 
     // Read the user's highscores then write the user's information
-    fb_read(("users/" + googleAuth.user.uid + "/coinGameHighScore")).then((fb_coinGameHighScore) => {
+    fb_read(("userPublicInformation/" + googleAuth.user.uid + "/coinGameHighScore")).then((fb_coinGameHighScore) => {
         var _coinGameHighScore;
         (fb_coinGameHighScore != null) ? _coinGameHighScore = fb_coinGameHighScore : _coinGameHighScore = 0;
 
-        fb_read(("users/" + googleAuth.user.uid + "/mazeGameHighScore")).then((fb_mazeGameHighScore) => {
+        fb_read(("userPublicInformation/" + googleAuth.user.uid + "/mazeGameHighScore")).then((fb_mazeGameHighScore) => {
             var _mazeGameHighScore;
             (fb_mazeGameHighScore != null) ? _mazeGameHighScore = fb_mazeGameHighScore : _mazeGameHighScore = 0;
             
-            var UserInformation = {userName: _userName, userAge: _userAge, mazeGameHighScore: _mazeGameHighScore, coinGameHighScore: _coinGameHighScore};
-            fb_write(filePath, UserInformation);
+            var userPublicInformation = {userName: _userName, mazeGameHighScore: _mazeGameHighScore, coinGameHighScore: _coinGameHighScore};
+            fb_write(filePath, userPublicInformation);
         });
 	});
+
+    // Get the user's private information from the form and write it to the database
+    filePath = "userPrivateInformation/" + googleAuth.user.uid;
+    var _userAge = document.getElementById("userAge").value;
+    var userPrivateInformation = {userAge: _userAge}
+    fb_write(filePath, userPrivateInformation)
 }
 function submitform() {
     // Check the user is logged in
@@ -161,7 +165,7 @@ function fb_read(FILEPATH) {
 function fb_sortByGameHighScore(gameHighScore, element) {
     console.log('%c fb_sortByGameHighScore: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
-    const REF = query(ref(fb_gameDB, "users"), orderByChild(gameHighScore), limitToLast(3));
+    const REF = query(ref(fb_gameDB, "userPublicInformation"), orderByChild(gameHighScore), limitToLast(3));
 
     get(REF).then((snapshot) => {
         var fb_data = snapshot.val();
