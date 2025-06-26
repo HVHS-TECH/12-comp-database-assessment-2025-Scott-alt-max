@@ -38,13 +38,13 @@ fb_initialise();
 
 function updateHighScore(_highScore) {
     if (uid != null) {
-        var filePath = "users/" + uid + "/coinGameHighScore";
+        var filePath = "userPublicInformation/" + uid + "/coinGameHighScore";
         fb_write(filePath, _highScore);
     }
 }
 function readHighScore() {
     if (uid != null) {
-        var filePath = "users/" + uid + "/coinGameHighScore";
+        var filePath = "userPublicInformation/" + uid + "/coinGameHighScore";
         return fb_read(filePath);
     }
 }

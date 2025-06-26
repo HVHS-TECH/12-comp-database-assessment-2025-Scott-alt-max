@@ -16,6 +16,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 export { fb_initialise, fb_authenticate, fb_detectAuthStateChanged, fb_logOut, submitform, fb_sortByGameHighScore, fb_write, fb_read };
 fb_initialise();
 fb_detectAuthStateChanged();
+fb_sortByGameHighScore("mazeGameHighScore", document.getElementById("defaultSort"));
 
 // Functions to initialise and authenticate
 function fb_initialise() {
@@ -53,8 +54,19 @@ function fb_authenticate() {
         console.log("User Email: " + googleAuth._tokenResponse.email); //DIAG
         console.log("User Local ID: " + googleAuth.user.uid); //DIAG
 
-        document.getElementById("statusMessage").innerHTML = ("");
-        //console.log(result); //DIAG
+        // Show the form to sign in and attempt to read the user's information from firebase and auto fill the form
+        document.getElementById("logInButton").style.display = "none";
+        document.getElementById("signUpForm").style.display = "block";
+        //document.getElementById("logOutButton").style.display = "block";
+        
+        fb_read(("userPublicInformation/" + googleAuth.user.uid + "/userName")).then((fb_userName) => {
+            console.log(fb_userName);
+            document.getElementById("userName").value = fb_userName;
+        });
+        fb_read(("userPrivateInformation/" + googleAuth.user.uid + "/userAge")).then((fb_userAge) => {
+            console.log(fb_userAge);
+            document.getElementById("userAge").value = fb_userAge;
+        });
     })
     .catch((error) => {
         console.log("Authentication unsuccessful"); //DIAG
@@ -105,7 +117,7 @@ function fb_writeUserInformation() {
     console.log('%c fb_writeTo: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
 
     // Get user's public information from form
-    var filePath = "userPublicInformation/" + googleAuth.user.uid;
+    var publicFilePath = "userPublicInformation/" + googleAuth.user.uid;
     var _userName = document.getElementById("userName").value;
 
     // Read the user's highscores then write the user's information
@@ -118,24 +130,23 @@ function fb_writeUserInformation() {
             (fb_mazeGameHighScore != null) ? _mazeGameHighScore = fb_mazeGameHighScore : _mazeGameHighScore = 0;
             
             var userPublicInformation = {userName: _userName, mazeGameHighScore: _mazeGameHighScore, coinGameHighScore: _coinGameHighScore};
-            fb_write(filePath, userPublicInformation);
+            fb_write(publicFilePath, userPublicInformation);
         });
 	});
 
     // Get the user's private information from the form and write it to the database
-    filePath = "userPrivateInformation/" + googleAuth.user.uid;
+    var privateFilePath = "userPrivateInformation/" + googleAuth.user.uid;
     var _userAge = document.getElementById("userAge").value;
     var userPrivateInformation = {userAge: _userAge}
-    fb_write(filePath, userPrivateInformation)
+    fb_write(privateFilePath, userPrivateInformation)
 }
-function submitform() {
-    // Check the user is logged in
-    if(googleAuth != null) {
-        document.getElementById("statusMessage").innerHTML = ("");
-        fb_writeUserInformation();
-    } else {
-        document.getElementById("statusMessage").innerHTML = ("User must be logged in");
-    }
+function submitform(event) {
+    // Stop the page from reloading
+    event.preventDefault();
+    // Write the information to the database
+    fb_writeUserInformation();
+    // Redirect them back to the page
+    window.location.href = "index.html";
 }
 
 // Functions to read stuff from the database

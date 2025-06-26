@@ -14,15 +14,16 @@
 <body>
   <div class="container">
     <h1>Scott’s Psliocybin Games</h1>
+    <a href="signUp.html">Sign up / Login</a>
     <a href="games/mazeGame.html">mazegame</a>
-    <a href="games/coinGame.html">coinggame</a>
+    <a href="games/coinGame.html">coingame</a>
     <table id="fruitTable">
       <h3>Highscores</h3>
       <p>Click on games to show appropriate highscores</p>
       <thead>
         <tr>
           <th>Username</th>
-          <th onclick="fb_sortByGameHighScore('mazeGameHighScore', this)">Maze Highscore <span class="arrows" id="mazeSortArrow"></span></th>
+          <th id="defaultSort" onclick="fb_sortByGameHighScore('mazeGameHighScore', this)">Maze Highscore <span class="arrows" id="mazeSortArrow"></span></th>
           <th onclick="fb_sortByGameHighScore('coinGameHighScore', this)">Coin Highscore <span class="arrows" id="coinSortArrow"></span></th>
         </tr>
       </thead>
@@ -30,26 +31,6 @@
         <!-- JavaScript will fill this -->
       </tbody>
     </table>
-
-    <p>Sign-up form:</p>
-    <button onclick="fb_authenticate()">Login with Google</button>
-
-    <form id="fruitForm">
-      <label for="userName">Your Username:</label>
-      <input type="text" id="userName" name="userName" value="scott" required />
-
-      <label for="userAge">Your Age:</label>
-      <input type="number" id="userAge" name="userAge" value="1" required />
-    </form>
-
-    <button onclick="submitform()">Submit</button>
-    <button onclick="fb_logOut()">Log Out</button>
-
-    <br><br><br>
-    <div id="response">
-    </div>
-
-    <p id="statusMessage"></p>
   </div>
 </body>
 </html>

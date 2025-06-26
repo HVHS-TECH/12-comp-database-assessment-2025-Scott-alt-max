@@ -44,13 +44,13 @@ onAuthStateChanged(AUTH, (user) => {
 
 function updateHighScore(_highScore) {
     if (uid != null) {
-        var filePath = "users/" + uid + "/mazeGameHighScore";
+        var filePath = "userPublicInformation/" + uid + "/mazeGameHighScore";
         fb_write(filePath, _highScore);
     }
 }
 function readHighScore() {
     if (uid != null) {
-        var filePath = "users/" + uid + "/mazeGameHighScore";
+        var filePath = "userPublicInformation/" + uid + "/mazeGameHighScore";
         return fb_read(filePath);
     }
 }

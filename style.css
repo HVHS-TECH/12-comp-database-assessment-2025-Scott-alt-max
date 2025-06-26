@@ -58,6 +58,9 @@ button:hover {
   font-style: italic;
 }
 
+#signUpForm, #logOutButton {
+  display: none;
+}
 table {
   border-collapse: collapse;
   width: 75%;
