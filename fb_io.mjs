@@ -13,7 +13,7 @@ import { getDatabase, ref, set, get, update, query, orderByChild, limitToFirst, 
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 /**************************************************************/
-export { fb_initialise, fb_authenticate, fb_detectAuthStateChanged, fb_logOut, submitform, fb_sortByGameHighScore, fb_write, fb_read };
+export { fb_initialise, fb_authenticate, fb_detectAuthStateChanged, submitform, fb_sortByGameHighScore, fb_write, fb_read };
 fb_initialise();
 fb_detectAuthStateChanged();
 fb_sortByGameHighScore("mazeGameHighScore", document.getElementById("defaultSort"));
@@ -57,7 +57,6 @@ function fb_authenticate() {
         // Show the form to sign in and attempt to read the user's information from firebase and auto fill the form
         document.getElementById("logInButton").style.display = "none";
         document.getElementById("signUpForm").style.display = "block";
-        //document.getElementById("logOutButton").style.display = "block";
         
         fb_read(("userPublicInformation/" + googleAuth.user.uid + "/userName")).then((fb_userName) => {
             console.log(fb_userName);
@@ -85,19 +84,6 @@ function fb_detectAuthStateChanged() {
         }
     }, (error) => {
         console.log("Authorisation state detection error");
-        console.log(error);
-    });
-}
-function fb_logOut() {
-    console.log('%c fb_logOut: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-    const AUTH = getAuth();
-
-    signOut(AUTH).then(() => {
-        googleAuth = null;
-        console.log("Successfully logged out");
-    })
-    .catch((error) => {
-        console.log("Logout error");
         console.log(error);
     });
 }
@@ -190,7 +176,7 @@ function fb_sortByGameHighScore(gameHighScore, element) {
             console.log(fb_data);
             
             // Add the top scores to the highscore table
-            const tbody = document.querySelector("#fruitTable tbody");
+            const tbody = document.querySelector("#scoreTable tbody");
             tbody.innerHTML = "";
 
             snapshot.forEach((userInformation) => {
@@ -211,164 +197,3 @@ function fb_sortByGameHighScore(gameHighScore, element) {
         console.log(error);
     });
 }
-/*function fb_listenForChanges() {
-    console.log('%c fb_listenForChanges: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-
-    var filePath = "Users";
-    const REF = ref(fb_gameDB, filePath);
-
-    onValue(REF, (snapshot) => {
-        var fb_data = snapshot.val();
-
-        if (fb_data != null) {
-            console.log("Database information for file path " + filePath + " has changed to:");
-            console.log(fb_data);
-        } else {
-            console.log("Attempting to read a value that doesn't exist");
-            console.log(fb_data);
-        }
-    });
-}*/
-/*function fb_readPlayerStuff() {
-    console.log('%c fb_readPlayerStuff: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-    
-    var highScores = [];
-
-    // Read the information for one player
-    var playerInformationArray = [];
-
-    fb_read(fb_gameDB, ("userInformation/" + googleAuth.user.uid)).then((userInformation) => {
-        playerInformationArray.push(userInformation);
-
-        fb_read(fb_gameDB, ("games/mazeGame/" + googleAuth.user.uid)).then((mazeGameHighScore) => {
-            playerInformationArray.push(mazeGameHighScore);
-
-            fb_read(fb_gameDB, ("games/coinGame/" + googleAuth.user.uid)).then((coinGameHighScore) => {
-                playerInformationArray.push(coinGameHighScore);
-
-                console.log(playerInformationArray);
-            }).catch((error) => {
-                console.log("Error with reading the database");
-                console.log(error);
-            });
-        }).catch((error) => {
-            console.log("Error with reading the database");
-            console.log(error);
-        });
-    }).catch((error) => {
-        console.log("Error with reading the database");
-        console.log(error);
-    });
-}*/
-/*function fb_dislay(fb_data) {
-    console.log('%c fb_dislay: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-
-    document.getElementById("response").innerHTML = `
-        <div style="background: rgb(248, 186, 104);; border: 1px solid #8b0000; padding: 1rem; border-radius: 8px;">
-            <p>Kia ora ${fb_data.name},</p>
-            <p>Thank you for joining us at Scott’s Strawberry Saloon (and other fruit products)! We're thrilled to have you as a customer!</p>
-            <p>Based on your preferences, we’ll be sending you personalized recommendations for tasty and healthy treats made with the freshest fruit — especially those ${fb_data.favoriteFruit} we heard you love!</p>
-            <p>At the moment, we want to offer you a deal to get fresh ${fb_data.favoriteFruit} ${fb_data.fruitQuantity}x a week!!</p>
-            <p>Ngā mihi nui,</p>
-            <p><em>The Scott’s Strawberry Saloon Team</em></p>
-        </div>
-    `;
-}*/
-/*function simplyfyString(str) {
-    // Remove spaces and convert to lowercase for consistency
-    return str.toLowerCase().replace(/\s+/g, '');
-}*/
-/*function fb_readAll() {
-    console.log('%c fb_readAll: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-
-    const REF = ref(fb_gameDB, "userInformation");
-
-    get(REF).then((snapshot) => {
-        var fb_data = snapshot.val();
-
-        if (fb_data != null) {
-            console.log("Successfully read database information:");
-            const fruitCounts = {};
-
-            Object.values(fb_data).forEach(user => {
-                const fruit = user.favoriteFruit;
-                if (fruit) {
-                    fruitCounts[fruit] = (fruitCounts[fruit] || 0) + 1;
-                }
-            });
-            const fruitArray = Object.entries(fruitCounts);
-            fruitArray.sort((a, b) => b[1] - a[1]);
-
-            const tbody = document.querySelector("#fruitTable tbody");
-            tbody.innerHTML = "";
-
-            fruitArray.forEach(([fruit, count]) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${fruit}</td><td>${count}</td>`;
-                tbody.appendChild(row);
-            });
-        } else {
-            console.log("Attempting to read a value that doesn't exist");
-            console.log(fb_data);
-        }
-    }).catch((error) => {
-        console.log("Error with reading the database");
-        console.log(error);
-    });
-}*/
-/*function fb_update() {
-    console.log('%c fb_update: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-
-    const REF = ref(fb_gameDB, "Users/UserID");
-    var UserInformation = {HighScore: 30, Name: "Scocc"};
-    
-    update(REF, UserInformation).then(() => {
-        console.log("Written the following information to the database:");
-        console.log(UserInformation);
-    }).catch((error) => {
-        console.log("Error with updating the database");
-        console.log(error);
-    });
-}*/
-/*function fb_readSorted() {
-    console.log('%c readSorted: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-
-    const REF= query(ref(fb_gameDB, "Users"), orderByChild("HighScore"), limitToLast(5));
-
-    get(REF).then((snapshot) => {
-        var fb_data = snapshot.val();
-        if (fb_data != null) {
-            console.log("Successfully read database information:");
-            // Logging database data
-            snapshot.forEach(function (userScoreSnapshot) {
-                console.log(userScoreSnapshot.val()); //DIAG
-            });
-        } else {
-            console.log("Attempting to read a value that doesn't exist");
-            console.log(fb_data);
-        }
-    }).catch((error) => {
-        console.log("Error with reading the database");
-        console.log(error);
-    });
-}*/
-/*function fb_writeJunk() {
-    console.log('%c fb_writeTo: ', 'color: ' + COL_C + '; background-color: ' + COL_B + ';'); //DIAG
-
-    for (var i = 0; i < 100; i++) {
-        var randomNumber = Math.floor(Math.random() * 100) + 1;
-        var filePath = "/Users/UserID" + i;
-        const REF = ref(fb_gameDB, filePath);
-        var UserInformation = {HighScore: randomNumber, Name: "Scobb"};
-        
-        set(REF, UserInformation).then(() => {
-            //console.log("Written the following information to the database:");
-            //console.log(UserInformation);
-        }).catch((error) => {
-            console.log("Error with writing to the database");
-            console.log(error);
-        });
-    }
-    
-    console.log("Written the information to the database:");
-}*/

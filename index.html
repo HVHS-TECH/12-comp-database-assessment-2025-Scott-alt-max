@@ -19,24 +19,24 @@
       <a id="logInLink" href="signUp.html">Sign up / Login</a>
     </div>
 
-    <div class="game-container">
-      <div class="game-box">
+    <div class="gameContainer">
+      <div class="gameBox">
         <img src="./images/mazeGame.png" alt="Maze Game Image">
         <a class="overlayText" href="./games/mazeGame.html">Maze Game</a>
       </div>
-      <div class="game-box">
+      <div class="gameBox">
         <img src="./images/coinGame.png" alt="Coin Game Image">
         <a class="overlayText" href="./games/coinGame.html">Coin Game</a>
       </div>
     </div>
-    <table id="fruitTable">
-      <h3>Highscores</h3>
-      <p>Click on games to show appropriate highscores</p>
+    <h3>Highscores</h3>
+    <p>Click on games to show appropriate highscores</p>
+    <table id="scoreTable">
       <thead>
         <tr>
           <th>Username</th>
-          <th id="defaultSort" onclick="fb_sortByGameHighScore('mazeGameHighScore', this)">Maze Highscore <span class="arrows" id="mazeSortArrow"></span></th>
-          <th onclick="fb_sortByGameHighScore('coinGameHighScore', this)">Coin Highscore <span class="arrows" id="coinSortArrow"></span></th>
+          <th id="defaultSort" onclick="fb_sortByGameHighScore('mazeGameHighScore', this)">Maze Highscore<span class="arrows" id="mazeSortArrow"></span></th>
+          <th onclick="fb_sortByGameHighScore('coinGameHighScore', this)">Coin Highscore<span class="arrows" id="coinSortArrow"></span></th>
         </tr>
       </thead>
       <tbody>
