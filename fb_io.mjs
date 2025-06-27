@@ -105,7 +105,7 @@ function fb_logOut() {
 // Functions to write user data
 function fb_write(FILEPATH, DATA) {
         const REF = ref(fb_gameDB, FILEPATH);
-        set(REF, DATA).then(() => {
+        return set(REF, DATA).then(() => {
             //console.log("Written the following information to the database:");
             //console.log(DATA);
         }).catch((error) => {
@@ -130,23 +130,28 @@ function fb_writeUserInformation() {
             (fb_mazeGameHighScore != null) ? _mazeGameHighScore = fb_mazeGameHighScore : _mazeGameHighScore = 0;
             
             var userPublicInformation = {userName: _userName, mazeGameHighScore: _mazeGameHighScore, coinGameHighScore: _coinGameHighScore};
-            fb_write(publicFilePath, userPublicInformation);
+            fb_write(publicFilePath, userPublicInformation).then(() => {
+
+                // Get the user's private information from the form and write it to the database
+                var privateFilePath = "userPrivateInformation/" + googleAuth.user.uid;
+                var _userAge = document.getElementById("userAge").value;
+                var _userEmail = googleAuth.user.email;
+                var _userPhotoUrl = googleAuth.user.photoURL;
+                var userPrivateInformation = {userAge: _userAge, userEmail: _userEmail, userPhotoUrl: _userPhotoUrl}
+                fb_write(privateFilePath, userPrivateInformation).then(() => {
+                    // Then redirect them back to the index page once all of that is done
+                    window.location.href = "index.html";
+                })
+            });
         });
 	});
 
-    // Get the user's private information from the form and write it to the database
-    var privateFilePath = "userPrivateInformation/" + googleAuth.user.uid;
-    var _userAge = document.getElementById("userAge").value;
-    var userPrivateInformation = {userAge: _userAge}
-    fb_write(privateFilePath, userPrivateInformation)
 }
 function submitform(event) {
     // Stop the page from reloading
     event.preventDefault();
     // Write the information to the database
     fb_writeUserInformation();
-    // Redirect them back to the page
-    window.location.href = "index.html";
 }
 
 // Functions to read stuff from the database

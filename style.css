@@ -6,7 +6,7 @@ body {
 }
 
 .container {
-  max-width: 600px;
+  max-width: 700px;
   margin: auto;
   background-color: #fff0aa;
   padding: 2rem;
@@ -17,13 +17,69 @@ body {
 h1 {
   color: rgb(248, 186, 104);
   font-size: 2.5rem;
-  margin-bottom: 0;
+  margin: 0px;
 }
 
-h2 {
-  color: #8b0000;
-  font-size: 1.2rem;
-  margin-top: 0.2rem;
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0 30px 0;
+}
+
+button, #logInLink {
+  margin-top: 0px;
+  padding: 0.7rem 1.2rem;
+  background-color: #ffaa8d;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+button:hover, #logInLink:hover {
+  text-decoration: underline;
+  background-color: #e6aa74;
+}
+
+.game-container {
+  clear: both;
+  display: flex;
+  width: 100%;
+  gap: 15px;
+}
+
+.game-box {
+  position: relative;
+  width: 50%;
+  height: 300px;
+  border: 2px solid black;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.game-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.overlayText {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  color: white;
+  background: rgba(0, 0, 0, 0.5); /* translucent black */
+  text-align: center;
+  padding: 10px 0 10px 0;
+  font-weight: bold;
+  text-decoration: none;
+}
+.overlayText:hover {
+  text-decoration: underline;
 }
 
 label {
@@ -37,25 +93,6 @@ input {
   margin-top: 0.3rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-}
-
-button {
-  margin-top: 1.5rem;
-  padding: 0.7rem 1.2rem;
-  background-color: #ffaa8d;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #e6aa74;
-}
-
-#statusMessage {
-  margin-top: 1rem;
-  font-style: italic;
 }
 
 #signUpForm, #logOutButton {
@@ -74,7 +111,8 @@ th, td {
 }
 th {
   background-color: #f2f2f2;
-}table thead tr :not(:first-child) {
+}
+table thead tr :not(:first-child) {
   text-decoration: underline;
 }
 table thead tr :not(:first-child):hover {
